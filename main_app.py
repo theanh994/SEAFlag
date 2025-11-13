@@ -40,6 +40,7 @@ class SEAFlagApp(ctk.CTk):
         
         self.running_stream = False  # Cờ kiểm soát vòng lặp camera/video
         self.cap = None              # Biến giữ đối tượng VideoCapture
+        self.after_id = None         # Thêm biến để lưu ID vòng lặp
 
         # --- Tải các "cốt lõi" MỘT LẦN lúc khởi động ---
         try:
@@ -192,8 +193,13 @@ class SEAFlagApp(ctk.CTk):
         self.update_stream_frame() # Gọi vòng lặp chung
 
     def stop_stream(self):
-        """Hàm dừng cho cả Video và Camera."""
-        self.running_stream = False # Tín hiệu dừng vòng lặp self.after
+        """Hàm dừng đã được nâng cấp."""
+        ### SỬA : Thêm logic hủy vòng lặp 'after' ###
+        if self.after_id:
+            self.after_cancel(self.after_id)
+            self.after_id = None
+        
+        self.running_stream = False
         if self.cap:
             self.cap.release()
             self.cap = None
