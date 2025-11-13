@@ -1,0 +1,14 @@
+# Đường dẫn TUYỆT ĐỐI đến thư mục dataset MỚI của bạn
+# (Đây là thư mục '2_Dataset_Split' mà bạn đã tạo)
+path: D:/theanh/Documents/AseanFlags_Roboflow/AseanFlags_Dataset_Split
+
+# Đường dẫn tương đối (từ 'path' ở trên)
+train: images/train
+val: images/val
+# test: images/test # (Nếu bạn có tạo)
+
+# Số lượng class
+nc: 11
+
+# Danh sách tên class - Đã CẬP NHẬT theo file data.yaml MỚI
+names: ['Brunei', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Myanmar', 'Philippines', 'Singapore', 'Thailand', 'Timor-Leste', 'Vietnam']
