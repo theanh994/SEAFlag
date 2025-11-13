@@ -11,7 +11,7 @@ MODEL_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/runs/detect/AseanFlags_YOL
 HIST_DB_PATH = "histograms.pkl"
 
 # 3. Đường dẫn đến ảnh bạn muốn KIỂM TRA
-TEST_IMAGE_PATH = r"D:\theanh\Documents\AseanFlags_Roboflow\raw\images\9187_png.rf.4b17e1c8fee445b83daa1edb44460b59.jpg" # (Thay bằng ảnh của bạn)
+TEST_IMAGE_PATH = r"D:\theanh\Documents\AseanFlags_Roboflow\raw\images\9194_png.rf.f7b0cf8cebcdeffc490712f17f6a1f0c.jpg" # (Thay bằng ảnh của bạn)
 
 # 4. Ngưỡng (Thresholds)
 YOLO_CONF_THRESHOLD = 0.5   # Độ tự tin tối thiểu của YOLO

@@ -36,19 +36,19 @@ def predict_camera():
         results = model.track(
             frame, 
             persist=True, 
-            conf=YOLO_CONF_THRESHOLD
+            conf=YOLO_CONF_THRESHOLD,
+            verbose=False # Thêm dòng này để tắt bớt log thừa
         )
         
         # Lấy frame đã được vẽ box
         annotated_frame = results[0].plot()
 
         # Hiển thị kết quả
-        cv2.imshow("Nhan dien Co Camera (An 'q' de thoat)", annotated_frame)
-        
-        # Nhấn 'q' để thoát
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        cv2.imshow("Nhan dien Co Camera (An 'q' hoac 'ESC' de thoat)", annotated_frame)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q') or key == 27:
+            print("Đã nhấn phím thoát...")
             break
-            
     # Dọn dẹp
     cap.release()
     cv2.destroyAllWindows()

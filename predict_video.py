@@ -47,11 +47,17 @@ def predict_video():
         annotated_frame = results[0].plot()
 
         # Hiển thị kết quả
-        cv2.imshow("Nhan dien Co (An 'q' de thoat)", annotated_frame)
+        cv2.imshow("Nhan dien Co (An 'q' hoac 'ESC' de thoat)", annotated_frame)
         
-        # Nhấn 'q' để thoát
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        # --- THAY ĐỔI CỐT LÕI ---
+        # Lấy phím được nhấn
+        key = cv2.waitKey(1) & 0xFF
+        
+        # Nhấn 'q' (quit) HOẶC phím 27 (ESC) để thoát
+        if key == ord('q') or key == 27:
+            print("Đã nhấn phím thoát...")
             break
+        # --- KẾT THÚC THAY ĐỔI ---
             
     # Dọn dẹp
     cap.release()
