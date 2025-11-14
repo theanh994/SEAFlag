@@ -11,11 +11,16 @@ MODEL_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/runs/detect/AseanFlags_YOL
 HIST_DB_PATH = "histograms.pkl"
 
 # 3. Đường dẫn đến ảnh bạn muốn KIỂM TRA
-TEST_IMAGE_PATH = r"D:\theanh\Documents\AseanFlags_Roboflow\country_flags_asean\Vietnam\vietnam_019.png"
+TEST_IMAGE_PATH = r"D:\theanh\Documents\AseanFlags_Roboflow\country_flags_asean\Philippines\9201.png"
 
 # 4. Ngưỡng (Thresholds)
 YOLO_CONF_THRESHOLD = 0.5
 HIST_SIMILARITY_THRESHOLD = 0.05
+
+CLASS_NAMES = [
+    'Brunei', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Myanmar', 
+    'Philippines', 'Singapore', 'Thailand', 'Timor-Leste', 'Vietnam'
+]
 
 # --- HÀM TÍNH HISTOGRAM ---
 def calculate_hist(image):
@@ -26,14 +31,28 @@ def calculate_hist(image):
     cv2.normalize(hist, hist, 0, 1.0, cv2.NORM_MINMAX)
     return hist
 
+def load_histograms(path):
+    """Tải CSDL histogram"""
+    if not os.path.exists(path):
+        print(f"[LỖI] Không tìm thấy tệp {path}!")
+        print("Vui lòng chạy 'generate_histograms.py' trước tiên.")
+        return None
+    try:
+        with open(path, 'rb') as f:
+            return pickle.load(f)
+    except Exception as e:
+        print(f"Lỗi khi tải histogram: {e}")
+        return None
+
 # --- HÀM CHÍNH ĐỂ DỰ ĐOÁN ---
 def predict_with_validation():
     print("Đang tải mô hình YOLO...")
     model = YOLO(MODEL_PATH)
     
     print(f"Đang tải CSDL Histogram từ {HIST_DB_PATH}...")
-    with open(HIST_DB_PATH, 'rb') as f:
-        ref_histograms = pickle.load(f)
+    ref_histograms = load_histograms(HIST_DB_PATH)
+    if ref_histograms is None:
+        return
         
     print(f"Đang xử lý ảnh: {TEST_IMAGE_PATH}")
     image_bgr = cv2.imread(TEST_IMAGE_PATH)
@@ -42,12 +61,14 @@ def predict_with_validation():
         return
 
     # 1. BƯỚC 1: CHẠY YOLO
-    results = model.predict(image_bgr, conf=YOLO_CONF_THRESHOLD)
-    
+    print("Đang chạy YOLO (Bước 1)...")
+    results = model.predict(
+        image_bgr, 
+        conf=YOLO_CONF_THRESHOLD,
+        imgsz=640,
+        verbose=False
+    )
     result = results[0]
-    class_names = result.names
-    
-    validated_boxes = []
 
     # 2. BƯỚC 2: XÁC THỰC BẰNG HISTOGRAM
     print(f"YOLO tìm thấy {len(result.boxes)} đối tượng. Đang xác thực...")
@@ -55,7 +76,12 @@ def predict_with_validation():
     for box in result.boxes:
         x1, y1, x2, y2 = [int(i) for i in box.xyxy[0]]
         class_id = int(box.cls[0])
-        class_name = class_names[class_id]
+        
+        if class_id < len(CLASS_NAMES):
+             class_name = CLASS_NAMES[class_id]
+        else:
+             class_name = "Unknown" # Đề phòng lỗi
+
         conf = float(box.conf[0])
 
         ref_hist = ref_histograms.get(class_name)
@@ -71,26 +97,34 @@ def predict_with_validation():
             continue
             
         roi_hist = calculate_hist(roi)
+        if roi_hist is None: continue
+
         score = cv2.compareHist(ref_hist, roi_hist, cv2.HISTCMP_CORREL)
-        
+
+        # --- LOGIC ĐÁNH DẤU MÀU (XANH/ĐỎ) ---
+
+        hist_text = ""
+        box_color = (0, 0, 0) # Màu mặc định
+
         if score >= HIST_SIMILARITY_THRESHOLD:
             print(f"-> XÁC THỰC: {class_name} (YOLO Conf: {conf:.2f}, Hist Score: {score:.2f}) -> Đạt")
-            validated_boxes.append((x1, y1, x2, y2, class_name, score, conf))
+            box_color = (0, 255, 0)  # MÀU XANH (Đạt)
+            hist_text = f"Hist: {score:.2f} (Dat)"
         else:
-            print(f"-> XÁC THỰC: {class_name} (YOLO Conf: {conf:.2f}, Hist Score: {score:.2f}) -> LOẠI BỎ")
+            print(f"-> XÁC THỰC: {class_name} (YOLO Conf: {conf:.2f}, Hist Score: {score:.2f}) -> LOẠI")
+            box_color = (0, 0, 255)  # MÀU ĐỎ (Loại)
+            hist_text = f"Hist: {score:.2f} (Loai)"
 
-    # 3. BƯỚC 3: VẼ KẾT QUẢ ĐÃ XÁC THỰC
-    print(f"Vẽ {len(validated_boxes)} đối tượng đã được xác thực.")
-    
-    for (x1, y1, x2, y2, class_name, score, conf) in validated_boxes:
+        # --- LOGIC VẼ NÂNG CAO (LUÔN VẼ) ---
         # Vẽ box màu xanh
-        cv2.rectangle(image_bgr, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv2.rectangle(image_bgr, (x1, y1), (x2, y2), box_color, 2)
         
         # Tính kích thước text để làm nền vừa đủ
         text_lines = [
             class_name,
             f"YOLO: {conf:.2f}",
-            f"Hist: {score:.2f}"
+            # f"Hist: {score:.2f}"
+            hist_text
         ]
         max_width = 0
         for txt in text_lines:
@@ -104,25 +138,25 @@ def predict_with_validation():
         # Kiểm tra nếu box gần mép trên thì vẽ text BÊN TRONG box
         if y1 < 60:  # Nếu quá gần mép trên
             # Vẽ nền BÊN TRONG box (phía dưới cạnh trên)
-            cv2.rectangle(image_bgr, (x1, y1 + 2), (x1 + bg_width, y1 + bg_height), (0, 255, 0), -1)
+            cv2.rectangle(image_bgr, (x1, y1 + 2), (x1 + bg_width, y1 + bg_height), box_color, -1)
             
             # Viết text BÊN TRONG
-            cv2.putText(image_bgr, class_name, (x1 + 5, y1 + 18), 
+            cv2.putText(image_bgr, text_lines[0], (x1 + 5, y1 + 18), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            cv2.putText(image_bgr, f"YOLO: {conf:.2f}", (x1 + 5, y1 + 33), 
+            cv2.putText(image_bgr, text_lines[1], (x1 + 5, y1 + 33), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            cv2.putText(image_bgr, f"Hist: {score:.2f}", (x1 + 5, y1 + 48), 
+            cv2.putText(image_bgr, text_lines[2], (x1 + 5, y1 + 48), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
         else:  # Box ở xa mép trên, vẽ text phía TRÊN box như bình thường
             # Vẽ nền màu xanh cho text
-            cv2.rectangle(image_bgr, (x1, y1 - bg_height), (x1 + bg_width, y1), (0, 255, 0), -1)
+            cv2.rectangle(image_bgr, (x1, y1 - bg_height), (x1 + bg_width, y1), box_color, -1)
             
             # Viết text màu đen trên nền xanh
-            cv2.putText(image_bgr, class_name, (x1 + 5, y1 - 33), 
+            cv2.putText(image_bgr, text_lines[0], (x1 + 5, y1 - 33), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            cv2.putText(image_bgr, f"YOLO: {conf:.2f}", (x1 + 5, y1 - 18), 
+            cv2.putText(image_bgr, text_lines[1], (x1 + 5, y1 - 18), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-            cv2.putText(image_bgr, f"Hist: {score:.2f}", (x1 + 5, y1 - 3), 
+            cv2.putText(image_bgr, text_lines[2], (x1 + 5, y1 - 3), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
 
     # Resize ảnh để vừa màn hình (không quá lớn)
@@ -140,7 +174,11 @@ def predict_with_validation():
     
     # Hiển thị ảnh với cửa sổ tự động điều chỉnh
     cv2.imshow("Ket Qua Da Xac Thuc (An ESC de thoat)", image_bgr)
-    cv2.waitKey(0)
+    while True:
+        key = cv2.waitKey(0) & 0xFF
+        if key == 27 or key == ord('q'): # phím ESC hoặc 'q'
+            break
+
     cv2.destroyAllWindows()
 
 

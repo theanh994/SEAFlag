@@ -35,7 +35,7 @@ ctk.set_default_color_theme("green")
 class SEAFlagApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("NHẬN DIỆN CỜ ĐÔNG NAM Á (Phiên bản Cốt Lõi 2.0)")
+        self.title("NHẬN DIỆN CỜ ĐÔNG NAM Á (Phiên bản Cốt Lõi 2.1)")
         self.geometry("1100x750")
         
         self.running_stream = False  # Cờ kiểm soát vòng lặp camera/video
@@ -117,7 +117,8 @@ class SEAFlagApp(ctk.CTk):
 
     def process_image_hybrid(self, path):
         """
-        Đây là logic "cốt lõi" của Bước 4: YOLO + Xác thực Histogram.
+        Logic "cốt lõi" (YOLO + Histogram) VỚI LOGIC VẼ ĐƯỢC NÂNG CẤP.
+        Giờ đây sẽ vẽ cả box "Đạt" (Xanh) và "Loại" (Đỏ).
         """
         img_bgr = cv2.imread(path)
         if img_bgr is None: 
@@ -135,13 +136,15 @@ class SEAFlagApp(ctk.CTk):
         result = results[0]
         
         print(f"YOLO tìm thấy {len(result.boxes)} đối tượng. Đang xác thực (Bước 2)...")
-        box_count = 0
+        # box_count = 0
 
         for box in result.boxes:
             x1, y1, x2, y2 = [int(i) for i in box.xyxy[0]]
             class_id = int(box.cls[0])
             class_name = CLASS_NAMES[class_id] # Lấy tên từ danh sách chuẩn
             
+            conf = float(box.conf[0])
+             
             ref_hist = self.ref_histograms.get(class_name)
             if ref_hist is None:
                 print(f"[Cảnh báo] Không có histogram mẫu cho {class_name}")
@@ -155,18 +158,64 @@ class SEAFlagApp(ctk.CTk):
 
             score = cv2.compareHist(ref_hist, roi_hist, cv2.HISTCMP_CORREL)
             
+            hist_text = ""
+            box_color = (0, 0, 0) # Màu mặc định
+
             if score >= HIST_SIMILARITY_THRESHOLD:
-                print(f"-> XÁC THỰC: {class_name} (Score: {score:.2f}) -> Đạt")
-                # Vẽ box và nhãn nếu Đạt
-                cv2.rectangle(img_bgr, (x1, y1), (x2, y2), (0, 255, 0), 3) # Nét vẽ dày hơn
-                label = f"{class_name}: {score:.2f}"
-                cv2.putText(img_bgr, label, (x1, y1 - 10), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 3) # Chữ to hơn
-                box_count += 1
+                print(f"-> XÁC THỰC: {class_name} (YOLO: {conf:.2f}, Hist: {score:.2f}) -> Đạt")
+                box_color = (0, 255, 0)  # MÀU XANH (Đạt)
+                hist_text = f"Hist: {score:.2f} (Dat)"
             else:
-                print(f"-> XÁC THỰC: {class_name} (Score: {score:.2f}) -> LOẠI BỎ")
-        
-        print(f"Hiển thị {box_count} cờ đã được xác thực.")
+                print(f"-> XÁC THỰC: {class_name} (YOLO: {conf:.2f}, Hist: {score:.2f}) -> Loai")
+                box_color = (0, 0, 255)  # MÀU ĐỎ (Loại)
+                hist_text = f"Hist: {score:.2f} (Loai)"
+
+                # Vẽ box và nhãn nếu Đạt
+            cv2.rectangle(img_bgr, (x1, y1), (x2, y2), box_color, 2)
+                # Tính kích thước text để làm nền
+            text_lines = [
+                class_name,
+                f"YOLO: {conf:.2f}",
+                # f"Hist: {score:.2f}"
+                hist_text
+            ]
+            max_width = 0
+            for txt in text_lines:
+                # (Lưu ý: Kích thước font và độ dày nên giống nhau)
+                (w, h), _ = cv2.getTextSize(txt, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)
+                if w > max_width:
+                    max_width = w
+                
+            bg_width = max_width + 10
+            bg_height = 50 # (15px * 3 dòng + lề)
+
+            # Kiểm tra nếu box gần mép trên
+            if y1 < 60: 
+            # Vẽ nền BÊN TRONG (với màu đã chọn)
+                cv2.rectangle(img_bgr, (x1, y1 + 2), (x1 + bg_width, y1 + bg_height), box_color, -1)
+                    
+                # Viết text (luôn là màu đen)
+                cv2.putText(img_bgr, text_lines[0], (x1 + 5, y1 + 18), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                cv2.putText(img_bgr, text_lines[1], (x1 + 5, y1 + 33), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                cv2.putText(img_bgr, text_lines[2], (x1 + 5, y1 + 48), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+            else: 
+                # Vẽ nền BÊN TRÊN (với màu đã chọn)
+                cv2.rectangle(img_bgr, (x1, y1 - bg_height), (x1 + bg_width, y1), box_color, -1)
+                
+                # Viết text (luôn là màu đen)
+                cv2.putText(img_bgr, text_lines[0], (x1 + 5, y1 - 33), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                cv2.putText(img_bgr, text_lines[1], (x1 + 5, y1 - 18), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                cv2.putText(img_bgr, text_lines[2], (x1 + 5, y1 - 3), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                
+                # --- KẾT THÚC LOGIC VẼ NÂNG CAO ---
+                
+        print("Đã hoàn tất xử lý ảnh.")
         self.display_image_in_frame(img_bgr)
 
 
