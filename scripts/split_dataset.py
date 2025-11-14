@@ -6,13 +6,13 @@ from sklearn.model_selection import train_test_split
 # 1. CẤU HÌNH CÁC ĐƯỜNG DẪN CỦA BẠN (SỬA 3 DÒNG NÀY)
 
 # ĐƯỜNG DẪN 1: Dán đường dẫn đến thư mục chứa ẢNH "raw" của bạn
-RAW_IMAGES_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/raw/images" 
+RAW_IMAGES_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/data/raw/images" 
 
 # ĐƯỜNG DẪN 2: Dán đường dẫn đến thư mục chứa NHÃN "raw" (.txt) của bạn
-RAW_LABELS_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/raw/labels"
+RAW_LABELS_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/data/raw/labels"
 
 # ĐƯỜNG DẪN 3: Chọn nơi bạn muốn lưu DATASET MỚI (đã chia)
-OUTPUT_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/AseanFlags_Dataset_Split" # (Tôi đổi tên output để tránh trùng)
+OUTPUT_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/data/AseanFlags_Dataset_Split" # (Tôi đổi tên output để tránh trùng)
 
 # Tỷ lệ phần trăm cho bộ validation (ví dụ: 0.2 = 20%)
 VAL_SIZE = 0.2

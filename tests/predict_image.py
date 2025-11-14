@@ -8,10 +8,10 @@ from ultralytics import YOLO
 MODEL_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/runs/detect/AseanFlags_YOLOv8s_Run/weights/best.pt"
 
 # 2. Đường dẫn đến CSDL histogram chúng ta vừa tạo
-HIST_DB_PATH = "histograms.pkl"
+HIST_DB_PATH = "D:/theanh/Documents/AseanFlags_Roboflow\App/assets/histograms.pkl"
 
 # 3. Đường dẫn đến ảnh bạn muốn KIỂM TRA
-TEST_IMAGE_PATH = r"D:\theanh\Documents\AseanFlags_Roboflow\country_flags_asean\Philippines\9201.png"
+TEST_IMAGE_PATH = r"D:\theanh\Documents\AseanFlags_Roboflow\data\country_flags_asean\Philippines\9201.png"
 
 # 4. Ngưỡng (Thresholds)
 YOLO_CONF_THRESHOLD = 0.5

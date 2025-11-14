@@ -11,10 +11,10 @@ from tkinter import filedialog
 
 # 1. Đường dẫn đến mô hình 'best.pt' MỚI NHẤT
 # (Nên là mô hình yolov8s bạn vừa train lại với dataset mới)
-MODEL_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/runs/detect/AseanFlags_YOLOv8s_Run/weights/best.pt"
+MODEL_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/App/assets/best.pt"
 
 # 2. Đường dẫn đến CSDL histogram (từ generate_histograms.py)
-HIST_DB_PATH = "histograms.pkl" 
+HIST_DB_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/App/assets/histograms.pkl" 
 
 # 3. Ngưỡng (Thresholds) - Đã tinh chỉnh
 YOLO_CONF_THRESHOLD = 0.25       # Ngưỡng tự tin của YOLO (để bắt cờ mờ/nhỏ)

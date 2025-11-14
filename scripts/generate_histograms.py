@@ -5,7 +5,7 @@ import pickle
 
 # --- CẤU HÌNH ---
 # Đường dẫn đến thư mục chứa 11 ảnh mẫu (sạch, phẳng)
-SAMPLE_DIR = "D:/theanh/Documents/AseanFlags_Roboflow/flag_samples"
+SAMPLE_DIR = "D:/theanh/Documents/AseanFlags_Roboflow/data/flag_samples"
 
 # Tên tệp CSDL histogram sẽ được tạo ra
 OUTPUT_FILE = "histograms.pkl"

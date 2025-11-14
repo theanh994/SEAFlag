@@ -9,7 +9,7 @@ def start_training():
     # -------------------------------------------------------------------
 
     # Dán đường dẫn TUYỆT ĐỐI đến tệp .yaml bạn vừa tạo (dùng dấu /)
-    YAML_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/AseanFlags_Dataset_Split/asean_flags.yaml"
+    YAML_PATH = "D:/theanh/Documents/AseanFlags_Roboflow/scripts/asean_flags.yaml"
 
     # -------------------------------------------------------------------
     # 2. CHỌN MÔ HÌNH

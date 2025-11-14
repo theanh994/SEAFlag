@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 # 1. Đường dẫn đến MỘT ảnh mẫu "sạch" mà bạn muốn minh họa
 # (Hãy đảm bảo tên tệp khớp, ví dụ 'Vietnam.jpg' hoặc 'Timor-Leste.jpg')
-SAMPLE_IMAGE_PATH = r"D:\theanh\Documents\AseanFlags_Roboflow\country_flags_asean\Vietnam\21194.png"
+SAMPLE_IMAGE_PATH = r"D:\theanh\Documents\AseanFlags_Roboflow\data\country_flags_asean\Vietnam\21194.png"
 
 # 2. Tên tệp ảnh sẽ được tạo ra
 OUTPUT_FIGURE_NAME = "Hinh_2_3.png"
