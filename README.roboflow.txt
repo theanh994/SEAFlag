@@ -1,8 +1,8 @@
 
-FlagAsean - v1 2025-11-14 12:21am
+FlagAsean - v2 2025-11-14 3:36pm
 ==============================
 
-This dataset was exported via roboflow.com on November 13, 2025 at 5:22 PM GMT
+This dataset was exported via roboflow.com on November 14, 2025 at 8:50 AM GMT
 
 Roboflow is an end-to-end computer vision platform that helps you
 * collaborate with your team on computer vision projects
@@ -17,7 +17,7 @@ visit https://github.com/roboflow/notebooks
 
 To find over 100k other datasets and pre-trained models, visit https://universe.roboflow.com
 
-The dataset includes 534 images.
+The dataset includes 1232 images.
 Flag-Country are annotated in YOLOv8 format.
 
 The following pre-processing was applied to each image:

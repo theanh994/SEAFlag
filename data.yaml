@@ -8,6 +8,6 @@ names: ['Brunei', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia', 'Myanmar', 'Phili
 roboflow:
   workspace: btltgmt
   project: flagasean-69exq
-  version: 1
+  version: 2
   license: CC BY 4.0
-  url: https://universe.roboflow.com/btltgmt/flagasean-69exq/dataset/1
+  url: https://universe.roboflow.com/btltgmt/flagasean-69exq/dataset/2
